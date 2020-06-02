@@ -7,9 +7,9 @@ import locale
 
 @respond_to('今何時')
 def now(message):
-    # strftime = datetime.now().strftime("%Y/%m/%d %H:%M:%S")
-    # message.reply(strftime)
-    message.reply('何時だろう？')
+    strftime = datetime.now().strftime("%Y/%m/%d %H:%M:%S")
+    message.reply(strftime)
+    # message.reply('何時だろう？')
 
 @respond_to('こんにちは')
 def mention_func(message):
