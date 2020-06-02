@@ -1,5 +1,14 @@
 from slackbot.bot import respond_to, default_reply, listen_to
 import random
+from datetime import datetime
+import locale
+
+locale.setlocale(locale.LC_CTYPE, "Japanese_Japan.932")
+
+@respond_to('今何時')
+def now(message):
+    strftime = datetime.now().strftime("%Y/%m/%d %H:%M:%S")
+    message.reply(strftime)
 
 @respond_to('こんにちは')
 def mention_func(message):
