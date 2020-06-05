@@ -1,9 +1,59 @@
 from slackbot.bot import respond_to, default_reply, listen_to
-import random
 from datetime import datetime
-import locale
+import random
+import tweepy
+import os
 
-# locale.setlocale(locale.LC_CTYPE, "Japanese_Japan.932")
+@respond_to('searchTweet(.*)')
+def search_tweet(message, word):
+    #twitterのアクセス情報
+    auth = tweepy.OAuthHandler(os.environ['CONSUMER_KEY'], os.environ['CONSUMER_SECRET'])
+    auth.set_access_token(os.environ['ACCESS_TOKEN'], os.environ['ACCESS_TOKEN_SECRET'])
+    api = tweepy.API(auth)
+    post_text = ''
+    message.send('「'+ word + '」でtweet検索するね…')
+    search_results = api.search(q=word, lang='ja', result_type='recent', count=100)
+
+    #検索結果を辞書[検索結果, いいね数]に詰めていく
+    result_dictionary = {}
+
+    cnt = 0
+    for result in search_results:
+        # message.send('検索できてるっぽいっす。')
+        cnt += 1
+        user = result.user
+        name = user.screen_name
+        id = result.id
+        tweet_link = 'https://twitter.com/' + name + '/status/' +str(id)
+        fav = result.favorite_count
+        result_text = '\n' + user.name + '@(' + user.screen_name + ')\n' + result.text + '\n(' + str(result.favorite_count) + 'いいね)' + tweet_link + '\n'
+        result_dictionary.setdefault(result_text, result.favorite_count)
+
+    print(cnt)
+
+    if len(result_dictionary) == 0:
+        message.send('ツイートが見つかりませんでした。')
+        return
+    
+    #いいね数が多い(valueの降順)ものからユーザ情報とつぶやき文章を取得
+    loop_count = 0
+    for k, v in sorted(result_dictionary.items(), key = lambda x: -x[1]):
+        print("---start---")
+        loop_count += 1
+        post_text = post_text + '---------------------------------------' + k
+        
+        #5個分のツイートが取れたらループ中断
+        if loop_count >= 5:
+            break
+
+    message.send(post_text)
+
+
+
+
+
+
+
 
 @respond_to('今何時')
 def now(message):
