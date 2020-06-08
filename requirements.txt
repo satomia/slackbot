@@ -1,1 +1,2 @@
 slackbot==0.5.6
+tweepy==3.8.0

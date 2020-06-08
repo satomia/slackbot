@@ -5,5 +5,6 @@ API_TOKEN = os.environ["AAAAA"]
 DEFAULT_REPLY = "Hey, I'm on Heroku!"
 
 PLUGINS = [
-    'plugins'
+    "slackbot.plugins",
+    "plugins"
 ]
