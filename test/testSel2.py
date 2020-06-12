@@ -23,8 +23,17 @@ print(driver.current_url)
 # print(driver.find_elements(By.CLASS_NAME ,'AllArticleList__ItemBodyTitle-mhtjc8-6'))
 article_links = driver.find_elements(By.CLASS_NAME ,'AllArticleList__ItemBodyTitle-mhtjc8-6')
 # print(article_links[0])
-print(article_links[0].text)
-print(article_links[0].get_attribute('href'))
+# print(article_links[0].text)
+# print(article_links[0].get_attribute('href'))
+
+# ページが完全に読み込まれるまでの時間を加味して最大5秒間待ち、スクリーンショットを保存して、画像をpost。
+print("スクリーンショット")
+driver.set_page_load_timeout(5)
+driver.save_screenshot('screenshot.png')
+# post_file('./screenShot.png')
+
+
+
 
 #ブラウザを終了する
 driver.quit()

@@ -1,8 +1,77 @@
 from slackbot.bot import respond_to, default_reply, listen_to
 from datetime import datetime
+from selenium import webdriver
+from selenium.webdriver.common.by import By
 import random
 import tweepy
 import os
+import chromedriver_binary #nopa
+import requests
+import re
+# from ..slackbot_settings import *
+
+url_slackapi = 'https://slack.com/api/files.upload'
+
+# 指定されたURLのフルスクリーンを取得して返却
+# @sugoi-bot ss https://news.yahoo.co.jp/
+@respond_to('ss(.*)')
+def screenshot(message, url):
+    #WebDriverのオプションを設定する
+    options = webdriver.ChromeOptions()
+    options.add_argument('--headless')
+
+    # x. ブラウザの新規ウィンドウを開く
+    print('connectiong to remote brwser...')
+    driver = webdriver.Chrome(options=options)
+
+    # 1. Qiita の Chanmoro のプロフィールページにアクセスする
+    # driver.get('https://qiita.com/Chanmoro')
+    # すたば
+    # print(url)
+    # driver.get('https://www.starbucks.co.jp/coffee/?nid=mm_01_pc')
+
+    # print(re.sub(r'<|>', '', url))
+    driver.get(re.sub(r'<|>', '', url))
+    
+    print(driver.current_url)
+
+    # 2. 「最近の記事」に表示されている記事一覧の 2 ページ目に移動する
+    # driver.find_element(By.XPATH, '//a[@rel="next"]').click()
+    # print(driver.current_url)
+    # message.send(driver.current_url)
+    # > https://qiita.com/Chanmoro?page=2
+
+    # ページが完全に読み込まれるまでの時間を加味して最大5秒間待ち、スクリーンショットを保存して、画像をpost。
+    message.send("スクリーンショットを撮ります。")
+    print("スクリーンショット")
+    driver.set_page_load_timeout(5)
+
+    # フルスクリーンのキャプチャ取得
+    page_width = driver.execute_script('return document.body.scrollWidth')
+    print(page_width)
+    page_height = driver.execute_script('return document.body.scrollHeight')
+    print(page_height)
+    driver.set_window_size(page_width, page_height)
+
+    driver.save_screenshot('screenshot.png')
+    post_file('./screenshot.png')
+
+    #ブラウザを終了する
+    driver.quit()
+
+
+def post_file(file_path):
+    files = {'file': open(file_path, 'rb')}
+    slackapi_params = {
+        'token': os.environ['SLACK_API_TOKEN'],
+        'channels': 'test'
+    }
+    requests.post(url_slackapi, data=slackapi_params, files=files)
+
+
+
+
+
 
 @respond_to('searchTweet(.*)')
 def search_tweet(message, word):
