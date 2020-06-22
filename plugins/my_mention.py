@@ -8,9 +8,95 @@ import os
 import chromedriver_binary #nopa
 import requests
 import re
-# from ..slackbot_settings import *
+import json
 
 url_slackapi = 'https://slack.com/api/files.upload'
+
+strAppUserId = ''
+strBotId = 'sample'
+strTopicId = 'aisatsu'
+
+#docomoAPI Repl-AiのAIシナリオを使用するため、ユーザIDを取得する
+def init():
+    print("---init---")
+    url = 'https://api.repl-ai.jp/v1/registration'
+    headers = {
+        'Content-type':'application/json',
+        'x-api-key':os.environ['DOCOMO_API_KEY']
+    }
+    data = {
+        'botId' : strBotId
+    }
+
+    response = requests.post(
+        url,
+        data=json.dumps(data),
+        headers=headers
+    )
+    print(response.status_code)
+    response = response.json()
+
+    global strAppUserId
+    strAppUserId = response.get('appUserId')
+    return strAppUserId
+
+'''
+docomoAPI Repl-AiのAIシナリオを使用した会話を行う
+プロジェクト：sample
+ボット名：挨拶aisatu
+@sugoi-bot aisatu init
+@sugoi-bot aisatu 田中です
+@sugoi-bot aisatu よろしくおねがいします
+@sugoi-bot aisatu 違います
+
+'''
+@respond_to('aisatu (.*)')
+def talk(message, input):
+    print("---registration---")
+
+    global strAppUserId
+    initTalkingFlag = 'false'
+
+    print("input:" + input)
+
+    # ユーザID取得
+    if input == "init":
+        initTalkingFlag = 'true'
+        strAppUserId = init()
+
+    print("initTalkingFlag:" + initTalkingFlag)
+    print("strAppUserId:" + strAppUserId)
+
+    # 対話
+    print("---dialogue---")
+    url = 'https://api.repl-ai.jp/v1/dialogue'
+    headers = {
+        'Content-type':'application/json',
+        'x-api-key':os.environ['DOCOMO_API_KEY']
+    }
+    data = {
+        'appUserId' : strAppUserId,
+        'botId' : strBotId,
+        'voiceText' : input,
+        'initTalkingFlag' : initTalkingFlag,
+        'initTopicId' : strTopicId
+    }
+    print(data)
+    response = requests.post(
+        url,
+        data=json.dumps(data),
+        headers=headers
+    )
+
+    print(response.status_code)
+    response = response.json()
+
+    print(response.get('serverSendTime'))
+    # message.reply(response.get('serverSendTime'))
+    message.reply(response.get('systemText').get('expression'))
+
+
+
 
 # 指定されたURLのフルスクリーンを取得して返却
 # @sugoi-bot ss https://news.yahoo.co.jp/
